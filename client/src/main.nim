@@ -25,7 +25,7 @@ var
   newName = remember ""
 
 
-proc updateNotes() {.async.} =
+proc updateNotes(): Future[void] {.async.} =
   # Делаем запрос к серверу на получение всех заметок
   await fetch(fmt"{BASE}/notes".cstring)
     # Получаем JSON
@@ -77,7 +77,8 @@ appRoutes "app":
           "Добавить"
           @click:
             # Добавляем новую заметку
-            discard addNote(newName).then(() => (discard updateNotes()))
+            discard await addNote(newName)
+            discard await updateNotes()
             newName.set("")
       tDiv(class = "flex flex-col gap-2"):
         # Пробегаемся по заметкам
@@ -98,4 +99,5 @@ appRoutes "app":
             {notes[i].name}
             @click:
               # При нажатии шлем PATCH запрос и обновляем список заметок
-              discard toggleNote(notes[i]).then(() => (discard updateNotes()))
+              discard await toggleNote(notes[i])
+              discard await updateNotes()
